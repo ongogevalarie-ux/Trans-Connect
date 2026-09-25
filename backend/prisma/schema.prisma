@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model TransportCompany {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  logo        String?
+  website     String?
+  bookingUrl  String?
+  createdAt   DateTime @default(now())
+
+  routes    Route[]
+  schedules Schedule[]
+  fares     Fare[]
+}
+
+model Route {
+  id          Int      @id @default(autoincrement())
+  origin      String
+  destination String
+  createdAt   DateTime @default(now())
+
+  companyId Int
+  company   TransportCompany @relation(fields: [companyId], references: [id])
+
+  schedules Schedule[]
+  fares     Fare[]
+}
+
+model Schedule {
+  id            Int       @id @default(autoincrement())
+  departureTime DateTime
+  arrivalTime   DateTime?
+  travelDays    String?
+  createdAt     DateTime  @default(now())
+
+  companyId Int
+  routeId   Int
+
+  company TransportCompany @relation(fields: [companyId], references: [id])
+  route   Route            @relation(fields: [routeId], references: [id])
+}
+
+model Fare {
+  id            Int       @id @default(autoincrement())
+  amount        Decimal   @db.Decimal(10, 2)
+  currency      String    @default("KES")
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  createdAt     DateTime  @default(now())
+
+  companyId Int
+  routeId   Int
+
+  company TransportCompany @relation(fields: [companyId], references: [id])
+  route   Route            @relation(fields: [routeId], references: [id])
+}
